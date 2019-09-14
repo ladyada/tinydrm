@@ -86,23 +86,23 @@ static int keidei20_write(struct spi_device *spi, u16 val, bool data)
 	return spi_write(spi, buf, 6);
 }
 
-static int keidei20_command(struct mipi_dbi *mipi, u8 cmd, u8 *par, size_t num)
+static int keidei20_command(struct mipi_dbi *mipi, u8 *cmd, u8 *par, size_t num)
 {
 	struct spi_device *spi = mipi->spi;
 	int i, ret;
 
 	if (!num)
-		DRM_DEBUG_DRIVER("cmd=%02x\n", cmd);
+		DRM_DEBUG_DRIVER("cmd=%02x\n", cmd[0]);
 	else if (num <= 32)
-		DRM_DEBUG_DRIVER("cmd=%02x, par=%*ph\n", cmd, (int)num, par);
+		DRM_DEBUG_DRIVER("cmd=%02x, par=%*ph\n", cmd[0], (int)num, par);
 	else
-		DRM_DEBUG_DRIVER("cmd=%02x, len=%zu\n", cmd, num);
+		DRM_DEBUG_DRIVER("cmd=%02x, len=%zu\n", cmd[0], num);
 
-	ret = keidei20_write(spi, cmd, false);
+	ret = keidei20_write(spi, cmd[0], false);
 	if (ret || !num)
 		return ret;
 
-	if (cmd == MIPI_DCS_WRITE_MEMORY_START) {
+	if (cmd[0] == MIPI_DCS_WRITE_MEMORY_START) {
 		u16 *pixel = (u16 *)par;
 
 		for (i = 0; i < num / 2; i++)

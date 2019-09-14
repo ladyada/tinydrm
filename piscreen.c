@@ -27,7 +27,7 @@
  * display controller. This means that 8-bit values has to be transferred
  * as 16-bit.
  */
-static int piscreen_command(struct mipi_dbi *mipi, u8 cmd, u8 *par, size_t num)
+static int piscreen_command(struct mipi_dbi *mipi, u8 *cmd, u8 *par, size_t num)
 {
 	struct spi_device *spi = mipi->spi;
 	void *data = par;
@@ -40,17 +40,17 @@ static int piscreen_command(struct mipi_dbi *mipi, u8 cmd, u8 *par, size_t num)
 		return -ENOMEM;
 
 	if (!num)
-		DRM_DEBUG_DRIVER("cmd=%02x\n", cmd);
+		DRM_DEBUG_DRIVER("cmd=%02x\n", cmd[0]);
 	else if (num <= 32)
-		DRM_DEBUG_DRIVER("cmd=%02x, par=%*ph\n", cmd, (int)num, par);
+		DRM_DEBUG_DRIVER("cmd=%02x, par=%*ph\n", cmd[0], (int)num, par);
 	else
-		DRM_DEBUG_DRIVER("cmd=%02x, len=%zu\n", cmd, num);
+		DRM_DEBUG_DRIVER("cmd=%02x, len=%zu\n", cmd[0], num);
 
 	/*
 	 * The Raspberry Pi supports only 8-bit on the DMA capable SPI
 	 * controller and is little endian, so byte swapping is needed.
 	 */
-	buf[0] = cpu_to_be16(cmd);
+	buf[0] = cpu_to_be16(cmd[0]);
 	gpiod_set_value_cansleep(mipi->dc, 0);
 	ret = tinydrm_spi_transfer(spi, 10000000, NULL, 8, buf, 2);
 	if (ret || !num)
